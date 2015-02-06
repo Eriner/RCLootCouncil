@@ -16,6 +16,9 @@
 
 --		LONG TERM: Clean UI, possibly skin to match UI choices (Blizzard, ElvUI, etc)
 
+--		Check rightclick menu tooltip on wrong lootNum
+--		Loot Everything doesn't do shit
+
 --_______________________________.
 --[[ CHANGELOG	
 
@@ -1104,6 +1107,7 @@ end
 -- Initiates the next item
 --------------------------------------
 function RCLootCouncil:initiateNext(item)
+	self:debugS(":initiateNext("..item..")")
 	itemRunning = item
 	RCLootCouncil:announceConsideration() -- announce it if it's on
 	self:SendCommMessage("RCLootCouncil", "start "..lootNum, channel) -- tell the council to start on the next item
@@ -1400,7 +1404,7 @@ function RCLootCouncil.handleResponse(response, frame)
 		id = frame
 		note = "autopass"
 	end
-	RCLootCouncil:debugS("responseID = "..id)
+	RCLootCouncil:debugS("lootTable index = "..id)
 	local _, totalIlvl = GetAverageItemLevel()
 	local gear1, gear2 = RCLootCouncil.getCurrentGear(lootTable[id]);
 	local _, class = UnitClass("player"); -- non-localized class name
@@ -2379,7 +2383,7 @@ function RCLootCouncil:GetItemsFromMessage(msg, sender)
 			self:debugS("item1 might be: "..theItem)
 			local actualItemString2; -- Initialize for possibility of 2 item links
 			local startLoc = string.find(msg, "Hitem:") -- Make sure they linked an item
-			if startLoc > 13 then return; end -- Hitem should start at 12, otherwise it's irrelevant
+			if startLoc > 13 then return; end -- Hitem should start before index 13, otherwise it's bad usage
 			local endLoc = string.find(msg, "|r", startLoc)
 			local actualItemString = string.match(msg, "|%x+|Hitem:.-|h.-|h|r");
 			self:debugS("actualItemString: "..actualItemString)		
@@ -2573,6 +2577,7 @@ end
 ----------------------------------------------------
 function RCLootCouncil:LootBoE(item)
 	if not item then return false; end
+	if db.autolootBoE then return true; end -- Don't bother checking if we know we're gonna loot it anyway
 	GameTooltip:SetOwner(UIParent, "ANCHOR_NONE")
 	GameTooltip:SetHyperlink(item)
 	if GameTooltip:NumLines() > 1 then -- check that there is something here
@@ -2581,7 +2586,7 @@ function RCLootCouncil:LootBoE(item)
 			if line and line.GetText then
 				if line:GetText() == ITEM_BIND_ON_EQUIP then
 					GameTooltip:Hide()
-					if db.autolootBoE then return true; else return false; end
+					return db.autolootBoE
 				end
 			end
 		end
