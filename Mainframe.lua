@@ -9,31 +9,18 @@
 --		Random award between equal votes.
 --		Implement autopass - will use same tech as stat priority sorting.
 
---		Alt-Clicking must add items separately in v2.0.
---		All calls (council, mlDB etc. ) should be made by the client.
-
 --		Sort item rolls (optionally) by class stat priority based on item stats.
 
 --		LONG TERM: Clean UI, possibly skin to match UI choices (Blizzard, ElvUI, etc)
 
---		Check rightclick menu tooltip on wrong lootNum
 --		Loot Everything doesn't do shit
 
 --_______________________________.
 --[[ CHANGELOG	
 
-====1.7.1 Release
-
-	*+Added announce award reason+.
-	*It's now possible to add "reason" when announcing awards, if awarding by a Loot History reason. Use "&r" in the announcement text. Props to Raylehnhoff.
-
-	*Text no longer have a fixed size, wherever possible.
-	*Minor optimizations.
-	*The addon now loots BoE items by default.
+====
 	
-	Bugfixes:
-	
-	*//Mousing over "PeopleToRoll" could cause an error.//
+	*RCLootCouncil now ignores enchanting materials.
 		
 ]]
 
@@ -392,15 +379,16 @@ function RCLootCouncil.EventHandler(self2, event, ...)
 							end
 						end
 						local _, _, lootQuantity, lootRarity = GetLootSlotInfo(i)
+						local link = GetLootSlotLink(i)
 						-- check if we should autoAward it, otherwise check if we should loot it
 						if db.autoAward and LootSlotHasItem(i) and lootQuantity > 0 and (lootRarity >= db.autoAwardQualityLower and lootRarity <= db.autoAwardQualityUpper) then
-							RCLootCouncil:AutoAward(i, db.autoAwardTo, GetLootSlotLink(i))
+							RCLootCouncil:AutoAward(i, db.autoAwardTo, link)
 
 						elseif db.autoLooting then
 							if (LootSlotHasItem(i) or db.lootEverything) and lootQuantity > 0 and lootRarity >= GetLootThreshold() then -- Check wether we want to loot the item or not
-								-- now that we know it's an lootable item, lets also check if we should loot BoE's
-								if RCLootCouncil:LootBoE(GetLootSlotLink(i)) then
-									tinsert(lootTable, GetLootSlotLink(i)) -- add the item link to the table
+								-- check if it's ignored and if we should loot BoE's
+								if RCLootCouncil:IgnoreItemCheck(link) and RCLootCouncil:LootBoE(link) then
+									tinsert(lootTable, link) -- add the item link to the table
 									tinsert(itemsToLootIndex, i) -- add its index to the lootTable
 								end
 							elseif lootQuantity == 0 then -- if its coin
@@ -2898,4 +2886,19 @@ function RCLootCouncil:UnitIsUnit(unit1, unit2)
 		unit2 = Ambiguate(unit2, "short")
 	end
 	return UnitIsUnit(unit1, unit2)
+end
+
+-- Returns false if we are ignoring the item
+function RCLootCouncil:IgnoreItemCheck(link)
+	-- List if items to ignore:
+	local ignore = {
+		109693, -- Draenic Dust
+		115502, -- Small Luminous Shard
+		111245, -- Luminous Shard
+		115504, -- Fractured Temporal Crystal
+		113588, -- Temporal Crystal
+	}
+	local itemID = tonumber(strmatch(link, "item:(%d+):")) -- extract itemID
+
+	return not tContains(ignore, itemID)
 end
