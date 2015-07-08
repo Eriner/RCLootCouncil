@@ -4,7 +4,7 @@
 -- Mainframe.lua Handles all the masterloot interaction and host/client comms
 
 --_______________________________.
--- TODO:  
+-- TODO:
 --		Test if PARTY_LOOT_METHOD_CHANGED can handle the GetML() and GetCouncil()
 --		Random award between equal votes.
 --		Implement autopass - will use same tech as stat priority sorting.
@@ -16,7 +16,7 @@
 --		Loot Everything doesn't do shit
 
 --_______________________________.
---[[ CHANGELOG	
+--[[ CHANGELOG
 
 ====1.7.3 Release
 
@@ -25,12 +25,12 @@
 	++More response announcement++
 	*It was pretty stupid not to allow normal award reasons to be announced with the last update.
 	Use "&r" in the announcement text to substitue it for the award reason.
-	
-	Bugfixes:	
-	*//Fixed some leaked globals.//	
+
+	Bugfixes:
+	*//Fixed some leaked globals.//
 	*//Optimized date calculations.//
 	*//Notes sometimes went all over the place. Making a note and responding on another item will still cause the note to disappear.
-	*//Sometimes items couldn't be awarded if people left the group.// 	
+	*//Sometimes items couldn't be awarded if people left the group.//
 ]]
 
 
@@ -115,7 +115,7 @@ local defaults = {
 		awardMessageText2 = "&p was awarded with &i for &r!",
 		announceConsideration = false,
 		announceText = "The council is currently considering &i!",
-		announceChannel = "RAID",		
+		announceChannel = "RAID",
 		autoLooting = true,
 		altClickLooting = true,
 		lootEverything = true,
@@ -204,9 +204,9 @@ function RCLootCouncil:OnInitialize()
 	-- register the optionstable
 	self.options.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db)
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("RCLootCouncil", self.options)
-	
+
 	-- add it to blizz options
-	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("RCLootCouncil", "RCLootCouncil")	
+	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("RCLootCouncil", "RCLootCouncil")
 	buttonsDB = db.dbToSend.buttons
 end
 
@@ -236,7 +236,7 @@ function RCLootCouncil:OnEnable()
 	self.db.global.version = version;
 
 	GuildRoster();
-	
+
 	local filterFunc = function(_, event, msg, player, ...)
 		return strfind(msg, "[[RCLootCouncil]]:")
 	end
@@ -276,7 +276,7 @@ function RCLootCouncil:MainFrame_OnLoad()
 		if i == 1 then
 			button:SetPoint("TOPLEFT", MainFrame, "TOPRIGHT", 2, 0)
 		elseif mod(i,10) == 1 then
-			button:SetPoint("TOPLEFT", "RCLootCouncil_SessionButton"..i-10, "TOPRIGHT", 2, 0)		
+			button:SetPoint("TOPLEFT", "RCLootCouncil_SessionButton"..i-10, "TOPRIGHT", 2, 0)
 		else
 			button:SetPoint("TOP", "RCLootCouncil_SessionButton"..i-1, "BOTTOM", 0, -2)
 		end
@@ -304,7 +304,7 @@ function RCLootCouncil:MainFrame_OnLoad()
 		enterClicksFirstButton = true,
 		whileDead = true,
 		hideOnEscape = true,
-		preferredIndex = 3, 
+		preferredIndex = 3,
 	}
 
 	StaticPopupDialogs["RCLOOTCOUNCIL_CONFIRM_AWARD"] = {
@@ -318,7 +318,7 @@ function RCLootCouncil:MainFrame_OnLoad()
 		enterClicksFirstButton = true,
 		whileDead = true,
 		hideOnEscape = true,
-		preferredIndex = 3, 
+		preferredIndex = 3,
 	}
 
 	StaticPopupDialogs["RCLOOTCOUNCIL_CONFIRM_USAGE"] = {
@@ -348,8 +348,8 @@ function RCLootCouncil:MainFrame_OnLoad()
 		enterClicksFirstButton = true,
 		whileDead = true,
 		hideOnEscape = true,
-		preferredIndex = 3, 
-	} 
+		preferredIndex = 3,
+	}
 
 end
 
@@ -367,7 +367,7 @@ function RCLootCouncil.EventHandler(self2, event, ...)
 					for i = 1, GetNumLootItems() do -- run through the number of items in the loot window
 						if db.altClickLooting then -- hook loot buttons if we use altClickLooting
 							local lootButton = getglobal("LootButton"..i)
-							if lootButton ~= nil then 
+							if lootButton ~= nil then
 								self:HookScript(lootButton, "OnClick", "LootOnClick") -- hook if we use it
 							end
 							if XLoot then -- hook XLoot
@@ -403,7 +403,7 @@ function RCLootCouncil.EventHandler(self2, event, ...)
 								LootSlot(i) -- loot the coin
 							end
 						end
-						
+
 					end
 				else -- don't do anything if we're in combat
 					self:Print("Couldn't start the loot session because you're in combat.")
@@ -431,7 +431,7 @@ function RCLootCouncil.EventHandler(self2, event, ...)
 	elseif event == "GROUP_ROSTER_UPDATE" and (IsInRaid() or nnp) then
 		masterLooter = RCLootCouncil_Mainframe.getML()
 		isCouncil = RCLootCouncil_Mainframe.isCouncil()
-		
+
 	elseif event == "RAID_INSTANCE_WELCOME" then
 		self:debugS("event = "..event)
 		function RCLootCouncil:InstanceInitialize() -- functionize this bitch
@@ -470,7 +470,7 @@ function RCLootCouncil.EventHandler(self2, event, ...)
 		self:debug("PARTY_LOOT_METHOD_CHANGED")
 		-- TODO Test this shit
 
-	elseif event == "GET_ITEM_INFO_RECEIVED" then 
+	elseif event == "GET_ITEM_INFO_RECEIVED" then
 		if not lootFramesCreated and #lootTable > 0 then
 			itemsLoaded = true
 			for i = 1, #lootTable do
@@ -520,7 +520,7 @@ function RCLootCouncil:OnCommReceived(prefix, msg, distri, sender)
 		local cmd, object = strsplit(" ", msg, 2) -- split the command from the object
 		if cmd and object then
 			self:debugS("Comm received, cmd: "..cmd..", object: "..object..", sender: "..sender)
-		else 
+		else
 			self:debugS("Comm received, cmd: "..cmd..", sender: "..sender)
 		end
 		-- Sender is Ambiguated(sender, "none") by AceComm
@@ -651,20 +651,20 @@ function RCLootCouncil:OnCommReceived(prefix, msg, distri, sender)
 		elseif cmd == 'verTest' then
 			if version < object and not hasVerCheck then -- if we're outdated and haven't already showed it to the user
 				self:Print("Your version: "..version.." is outdated, newer version is: "..object)
-				hasVerCheck = true;				
+				hasVerCheck = true;
 			end
 			local _, class = UnitClass("player")
 			self:SendCommMessage("RCLootCouncil", "verTestReply "..self:Serialize({class, guildRank, version}) , "WHISPER", sender)
 
 		elseif cmd == 'verTestReply' then
 			local test, c = self:Deserialize(object)
-			if test then			
+			if test then
 				if version < c[3] and not hasVerCheck then -- if we're outdated
 					self:Print("Your version: "..version.." is outdated, newest version is: "..c[3])
 					hasVerCheck = true;
 				end
 				tinsert(c, 2, sender) -- insert sender to the table
-				RCLootCouncil_VersionFrame:AddPlayer(c) -- and add the data to the versionFrame							
+				RCLootCouncil_VersionFrame:AddPlayer(c) -- and add the data to the versionFrame
 			else -- if old version
 				RCLootCouncil_VersionFrame:AddPlayer({nil, sender, "Unknown", object})
 			end
@@ -689,7 +689,7 @@ function RCLootCouncil:OnCommReceived(prefix, msg, distri, sender)
 		elseif cmd == "reRoll" then
 			-- object = item, session
 			local test, c = self:Deserialize(object)
-			if test then 
+			if test then
 				RCLootCouncil_LootFrame:Update(nil, {item = c[1], position = c[2]})
 				self:Print(sender.." requested a reroll on "..c[1])
 			else
@@ -710,7 +710,7 @@ end
 -- Prints debug messages if turned on
 -------------------------------------------
 function RCLootCouncil:debug(msg)
-	if debug then 
+	if debug then
 		self:Print("debug: "..msg)
 	end
 	RCLootCouncil:DebugLogAdd(msg)
@@ -782,7 +782,7 @@ end
 --------------------------------------------
 function RCLootCouncil_Mainframe.minimize(action)
 	if action == 'minimize' then
-		MainFrame:SetHeight(35)	
+		MainFrame:SetHeight(35)
 		MainFrame:DisableDrawLayer("OVERLAY")
 		MainFrame:DisableDrawLayer("ARTWORK") -- disable (unlabled) layer
 		CurrentItemHover:Hide()
@@ -808,7 +808,7 @@ function RCLootCouncil_Mainframe.minimize(action)
 		RCLootCouncil_Mainframe.updateSelection(0,true); -- clear selection, must be at end of hide(s), otherwise bugs ensue
 		isMinimized = true; -- variable set in minimize function and not on button press to ensure variable it set correctly
 	elseif action == 'unminimize' then
-		MainFrame:SetHeight(407)	
+		MainFrame:SetHeight(407)
 		MainFrame:EnableDrawLayer("OVERLAY")
 		MainFrame:EnableDrawLayer("ARTWORK") -- disable (unlabled) layer
 		CurrentItemHover:Show()
@@ -936,7 +936,7 @@ function RCLootCouncil:ChatCommand(msg)
 
 	elseif input == 'hide' then
 		RCLootCouncil_Mainframe.hideMainFrame()
-	
+
 	elseif input == 'council' then
 		if db.council then
 			self:Print("Council: ")
@@ -966,7 +966,7 @@ function RCLootCouncil:ChatCommand(msg)
 				self:Print("There's noone in the council called "..arg)
 			end
 		end
-			
+
 	elseif input == 'deleteentirecouncil' then
 		db.council = {}
 		self:Print("Council wiped")
@@ -976,7 +976,7 @@ function RCLootCouncil:ChatCommand(msg)
 			RCLootCouncil_Mainframe.getML()
 			RCLootCouncil_Mainframe.raidTestFrames(tonumber(arg))
 		else
-			if arg then 
+			if arg then
 				self:Print("You can only raid test when in a raid and are the group leader/assistant.")
 				self:Print("Starting solo test.")
 			end
@@ -987,7 +987,7 @@ function RCLootCouncil:ChatCommand(msg)
 		local _, totalIlvl = GetAverageItemLevel()
 		local gear1, gear2 = RCLootCouncil.getCurrentGear(lootTable[currentSession]);
 		local _, class = UnitClass("player"); -- non-localized class name
-	
+
 		local names = { "AName", "Bname", "CName", "DName", "OName",}
 		for k = 1, 10 do
 			local toAdd = {
@@ -1010,7 +1010,7 @@ function RCLootCouncil:ChatCommand(msg)
 			}
 			RCLootCouncil:OnCommReceived("RCLootCouncil", "add "..self:Serialize(toAdd), "WHISPER", playerFullName)
 		end
-	 
+
 	elseif input == 'version' or input == "v" or input == "ver" then
 		self:EnableModule("RCLootCouncil_VersionFrame")
 	elseif input == "history" or input == "his" then
@@ -1021,7 +1021,7 @@ function RCLootCouncil:ChatCommand(msg)
 		superDebug = not superDebug
 	elseif input == "whisper" then
 		self:Print("Players can whisper (or through Raidchat if enabled) their current item(s) followed by a keyword to the Master Looter if they doesn't have the addon installed.\nThe keyword list is found under the 'Buttons, Responses and Whispers' optiontab.\nPlayers can whisper 'rchelp' to the Master Looter to retrieve this list.\nNOTE: People should still get the addon installed, otherwise all player information won't be available.")
-    
+
 	elseif input == "reset" then
 		if RCLootFrame then
 			RCLootFrame:ClearAllPoints()
@@ -1038,9 +1038,9 @@ function RCLootCouncil:ChatCommand(msg)
 		end
 		if RCLootHistoryFrame then
 			RCLootHistoryFrame:ClearAllPoints()
-			RCLootHistoryFrame:SetPoint("CENTER", -400, 0)		
-		end	
-	
+			RCLootHistoryFrame:SetPoint("CENTER", -400, 0)
+		end
+
 	elseif input == "debuglog" or input == "log" then
 		for k,v in ipairs(debugLog) do
 			print(k.." - "..v)
@@ -1051,7 +1051,7 @@ function RCLootCouncil:ChatCommand(msg)
 	else
         RCLootCouncil:ChatCommand("help")
     end
-end 
+end
 
 ---------- initiateLoot --------------
 -- Start looting an item
@@ -1071,13 +1071,13 @@ function RCLootCouncil_initiateLoot(item)
 			end
 		end
 		hasItemInfo = true
-		
+
 		if itemRunning then -- if we're already trying to handle an item
 			self:Print("Can't start a new loot session while an item is being considered");
 			self:debug("Trying to start new session while another is being considered!!")
 			return;
 		else -- we're not running an item
-			itemRunning = item;			
+			itemRunning = item;
 			-- create the table of in-raid-councilmembers to send to the councillors
 			for _, v in ipairs(db.council) do
 				if UnitInRaid(Ambiguate(v, "short")) then
@@ -1086,15 +1086,15 @@ function RCLootCouncil_initiateLoot(item)
 			end
 			self:SendCommMessage("RCLootCouncil", "council "..self:Serialize(currentCouncil), channel) -- let the members know if they're councilmen
 			mlDB = db.dbToSend -- create the master looter db
-			self:SendCommMessage("RCLootCouncil", "mlDB "..self:Serialize(mlDB), channel) -- and send 
+			self:SendCommMessage("RCLootCouncil", "mlDB "..self:Serialize(mlDB), channel) -- and send
 			self:SendCommMessage("RCLootCouncil", "lootTable "..self:Serialize(lootTable), channel) -- tell everyone to do the same
 			self:SendCommMessage("RCLootCouncil", "start "..lootNum, channel) -- tell the council we've started
-			self:debug("Added item: "..item)			
+			self:debug("Added item: "..item)
 			BtClose:SetText("Cancel Looting")
 			RCLootCouncil:announceConsideration() -- announce it if it's on
 			self:debugS("RCLootCouncil_LootFrame:Update() - RCLootCouncil_initiateLoot()")
 			RCLootCouncil_LootFrame:Update(lootTable) -- setup our own loot frames
-			RCLootCouncil_Mainframe.prepareLootFrame(item)				
+			RCLootCouncil_Mainframe.prepareLootFrame(item)
 		end
 	end
 end
@@ -1108,7 +1108,7 @@ function RCLootCouncil:initiateNext(item)
 	RCLootCouncil:announceConsideration() -- announce it if it's on
 	self:SendCommMessage("RCLootCouncil", "start "..lootNum, channel) -- tell the council to start on the next item
 	currentSession = lootNum
-	RCLootCouncil_Mainframe.prepareLootFrame(item)	
+	RCLootCouncil_Mainframe.prepareLootFrame(item)
 end
 
 ---------- prepareLootFrame ----------
@@ -1126,9 +1126,9 @@ function RCLootCouncil_Mainframe.prepareLootFrame(item)
 		if thisItemTexture then
 			CurrentItemTexture:SetTexture(thisItemTexture); -- Set the texture of the icon box
 		else
-			CurrentItemTexture:SetTexture("Interface\InventoryItems\WoWUnknownItem01");
+			CurrentItemTexture:SetTexture("Interface\\InventoryItems\\WoWUnknownItem01");
 		end
-	
+
 		if not isMinimized then
 			CurrentItemTexture:Show(); -- Open up the icon box
 			EmptyTexture:Hide(); -- Hide the empty texture box
@@ -1141,7 +1141,7 @@ function RCLootCouncil_Mainframe.prepareLootFrame(item)
 		else
 			CurrentItemLvl:SetText("");
 		end
-	
+
 		if sLink then
 			CurrentItemLabel:SetText(sLink); -- Set the item link for color and such
 		else
@@ -1166,7 +1166,7 @@ function RCLootCouncil_Mainframe.prepareLootFrame(item)
 		end
 
 		PeopleToRollLabel:SetText(GetNumGroupMembers()) -- set the amount of people missing the rolling
-		
+
 		-- Award string
 		AwardString:Hide()
 		if isMasterLooter or isTesting then
@@ -1174,16 +1174,16 @@ function RCLootCouncil_Mainframe.prepareLootFrame(item)
 				AwardString:Show()
 				AwardString:SetText("You can't award this item yet!")
 				AwardString:SetTextColor(1,0,0,1)
-			end	
+			end
 		end
-		if currentSession < lootNum then				
+		if currentSession < lootNum then
 			AwardString:SetText("This item has been awarded.")
 			AwardString:SetTextColor(0,1,0,1)
 			AwardString:Show()
 		end
 
 		RCLootCouncil_Mainframe:UpdateSessionButtons()
-		
+
 		if not isMinimized then
 			RCLootCouncil_Mainframe.showMainFrame()
 		else
@@ -1191,7 +1191,7 @@ function RCLootCouncil_Mainframe.prepareLootFrame(item)
 		end
 	else
 		self:debug("PrepareLootFrame called without a valid initiator!")
-	end	
+	end
 end
 
 --[[
@@ -1266,10 +1266,10 @@ function RCLootCouncil_Mainframe.ShowCurrentGearTooltip(id)
 		if entryTable[currentSession][id][6] then
 			GameTooltip:SetHyperlink(entryTable[currentSession][id][6])
 			GameTooltip:Show()
-		end	  			
+		end
 	elseif selection[6] then
 		GameTooltip:SetHyperlink(selection[6])
-		GameTooltip:Show()   		
+		GameTooltip:Show()
 	end
 end
 
@@ -1283,7 +1283,7 @@ function RCLootCouncil_Mainframe.ShowCurrentGear2Tooltip(id)
 			GameTooltip:SetOwner(MainFrame, "ANCHOR_CURSOR")
 			GameTooltip:SetHyperlink(entryTable[currentSession][id][7])
 			GameTooltip:Show()
-		end	  			
+		end
 	elseif selection[7] then
 			GameTooltip:SetOwner(MainFrame, "ANCHOR_CURSOR")
 			GameTooltip:SetHyperlink(selection[7])
@@ -1328,7 +1328,7 @@ function RCLootCouncil_Mainframe.setClassIcon(frame, class)
 		frame:SetTexture("Interface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES"); -- this is the image containing all class icons
 		local coords = CLASS_ICON_TCOORDS[class]; -- get the coordinates of the class icon we want
 		frame:SetTexCoord(unpack(coords)); -- cut out the region with our class icon according to coords
-	else -- if there's no class 
+	else -- if there's no class
 		frame:SetTexture("Interface/ICONS/INV_Sigil_Thorim.png")
 	end
 end
@@ -1358,7 +1358,7 @@ function RCLootCouncil_Mainframe.setCurrentGear(item1, item2, gear1Frame, gear2F
 		local _, _, _, _, _, _, _, _, _, item1Tex = GetItemInfo(item1); -- Get the gear1 item info
 		gear1Frame:SetTexture(item1Tex) -- set the texture
 		gear1Frame:Show()
-		
+
 	else -- hide it, in case we're doing a non-item
 		gear1Frame:Hide()
 	end
@@ -1404,7 +1404,7 @@ function RCLootCouncil.handleResponse(response, frame)
 	local _, totalIlvl = GetAverageItemLevel()
 	local gear1, gear2 = RCLootCouncil.getCurrentGear(lootTable[id]);
 	local _, class = UnitClass("player"); -- non-localized class name
-	
+
 	local toAdd = {
 		["i"] = id,
 			{
@@ -1428,7 +1428,7 @@ function RCLootCouncil.handleResponse(response, frame)
 	self:SendCommMessage("RCLootCouncil", "add "..self:Serialize(toAdd), channel) -- tell everyone else to add it
 end
 
- 
+
 ------------- isSelected ----------------------------------------
 -- Tests if they're selected or not.
 -----------------------------------------------------------------
@@ -1451,7 +1451,7 @@ function RCLootCouncil_Mainframe.updateSelection(id, update)
 	end
 	if not update then -- set the selection if we didn't just want to update
 		selection = entryTable[currentSession][id]
-	end 
+	end
 	if selection then -- Check if we should update or user clicked a nonshowing row
 		-- Initialize variables
 		local sLink, iLevel, thisItemTexture, sLink2, thisItemTexture2;
@@ -1461,14 +1461,14 @@ function RCLootCouncil_Mainframe.updateSelection(id, update)
 		if selection[7] then -- if they have 2 item links, then get the second's info
 			_, sLink2, _, _, _, _, _, _, _, thisItemTexture2 = GetItemInfo(selection[7]);
 		end
-		
+
 		-- Remove and award button
 		if isMasterLooter or isTesting then
 			BtRemove:Show()
 			BtAward:Hide()
 			if currentSession == lootNum then
 				BtAward:Show()
-			end	
+			end
 		else
 			BtRemove:Hide()
 			BtAward:Hide()
@@ -1480,16 +1480,16 @@ function RCLootCouncil_Mainframe.updateSelection(id, update)
 			DualItemLabel1:SetText(sLink)
 			DualItemLabel2:SetText(sLink2)
 			DualItemLabel1:Show()
-			DualItemLabel2:Show()	
+			DualItemLabel2:Show()
 			DualItemTexture1:Show()
 			DualItemTexture2:Show()
 			DualItemSelection1:Show()
-			DualItemSelection2:Show()					
+			DualItemSelection2:Show()
 			CurrentSelectionLabel:Hide()
 			CurrentSelectionIlvl:Hide()
 			CurrentSelectionTexture:Hide()
 			CurrentSelectionHover:Hide()
-			
+
 		elseif sLink then -- Only show 1 item
 			CurrentSelectionLabel:SetText(sLink)
 			CurrentSelectionIlvl:SetText("ilvl: "..iLevel)
@@ -1497,9 +1497,9 @@ function RCLootCouncil_Mainframe.updateSelection(id, update)
 			CurrentSelectionHover:Show()
 			CurrentSelectionLabel:Show()
 			CurrentSelectionIlvl:Show()
-			CurrentSelectionTexture:Show()		
+			CurrentSelectionTexture:Show()
 			DualItemLabel1:Hide()
-			DualItemLabel2:Hide()	
+			DualItemLabel2:Hide()
 			DualItemTexture1:Hide()
 			DualItemTexture2:Hide()
 			DualItemSelection1:Hide()
@@ -1510,7 +1510,7 @@ function RCLootCouncil_Mainframe.updateSelection(id, update)
 		BtClear:Show()
 	else -- if there's no selection, hide everything
 		DualItemLabel1:Hide()
-		DualItemLabel2:Hide()	
+		DualItemLabel2:Hide()
 		DualItemTexture1:Hide()
 		DualItemTexture2:Hide()
 		DualItemSelection1:Hide()
@@ -1545,7 +1545,7 @@ function RCLootCouncil_Mainframe.removeEntry(session, name)
 		if selection and self:UnitIsUnit(selection[1],name) then
 			RCLootCouncil_Mainframe.updateSelection(0, true); -- and clear the selection if we had selected the one to be removed
 		end
-	else 
+	else
 		self:debug("Couldn't remove entry/Name wasn't listed")
 	end
 end
@@ -1563,7 +1563,7 @@ function RCLootCouncil_Mainframe.vote(id)
 			for k,v in pairs(entryTable[currentSession][id][12]) do -- remove the voter from voters table
 				if self:UnitIsUnit(v,"player") then tremove(entryTable[currentSession][id][12], k); end
 			end
-			
+
 			self:SendCommMessage("RCLootCouncil", "vote "..currentSession.." "..entryTable[currentSession][id][1].." devote", channel) -- tell everyone who you vote for
 			if isMasterLooter and tContains(votersNames, masterLooter) then
 				for k,v in pairs(votersNames) do
@@ -1639,7 +1639,7 @@ function RCLootCouncil_Mainframe.award(reason)
 			self:Print("The item would now be awarded to "..Ambiguate(selection[1], "short"))
 			if lootNum < #itemsToLootIndex then -- if there's more items to loot
 				RCLootCouncil_Mainframe.abortLooting() -- stop the current looting
-				lootNum = lootNum + 1; 
+				lootNum = lootNum + 1;
 				isTesting = true
 				RCLootCouncil:initiateNext(lootTable[lootNum]); -- start it
 			else -- if there's not
@@ -1647,7 +1647,7 @@ function RCLootCouncil_Mainframe.award(reason)
 				self:SendCommMessage("RCLootCouncil", "stop", channel) -- tell the council to stop as well
 				RCLootCouncil_Mainframe.abortLooting()
 				RCLootCouncil_Mainframe.stopLooting()
-				RCLootCouncil.CloseButton_OnClick(); 
+				RCLootCouncil.CloseButton_OnClick();
 			end
 		else
 			self:Print("The item would now be awarded to "..Ambiguate(selection[1], "short").." and the loot session concluded.")
@@ -1666,7 +1666,7 @@ function RCLootCouncil_Mainframe.award(reason)
 					else
 						self:Print("Couldn't award the loot since it has already been awarded!")
 						return;
-					end				
+					end
 				else -- the function was called by something else
 					self:debug("award called without items!")
 					self:Print("Error awarding loot, please restart the looting session.")
@@ -1677,33 +1677,33 @@ function RCLootCouncil_Mainframe.award(reason)
 					if db.awardMessageChat1 ~= "NONE" then -- if we want to tell who won
 						local message = gsub(db.awardMessageText1, "&p", Ambiguate(selection[1], "short"))
 						message = gsub(message, "&i", itemRunning)
-						
+
 						-- If it's looted for a reason specified in the Loot History Options
-						if reason then 
+						if reason then
 							message = gsub(message, "&r", "(" .. reason.text .. ")")
 						elseif not reason then
 							message = gsub(message, "&r", buttonsDB[selection[5]]["response"])
 						end
-						
+
 						SendChatMessage(message, db.awardMessageChat1); -- then do it
 					end
 					if db.awardMessageChat2 ~= "NONE" then -- if the user is posting to 2 channels
 						local message = gsub(db.awardMessageText2, "&p", Ambiguate(selection[1], "short"))
 						message = gsub(message, "&i", itemRunning)
-						
+
 						-- If it's looted for a reason specified in the Loot History Options
-						if reason then 
+						if reason then
 							message = gsub(message, "&r", "(" .. reason.text .. ")")
 						elseif not reason then
 							message = gsub(message, "&r", buttonsDB[selection[5]]["response"] )
 						end
-						
+
 						SendChatMessage(message, db.awardMessageChat2);
 					end
 				end
 
 				-- Item awards history:
-				-- lootDB format: "name" = {"lootWon", "date (d/m/y)", "time (h:m:s)", "instance", "boss", "votes", "itemReplaced1", "itemReplaced2"}	
+				-- lootDB format: "name" = {"lootWon", "date (d/m/y)", "time (h:m:s)", "instance", "boss", "votes", "itemReplaced1", "itemReplaced2"}
 				local instanceName, _, _, difficultyName = GetInstanceInfo()
 				local table;
 				if reason and reason.log then -- not a roll response
@@ -1717,27 +1717,27 @@ function RCLootCouncil_Mainframe.award(reason)
 				end
 
 				-- Only store the data if the user wants to
-				if db.trackAwards and table then 
+				if db.trackAwards and table then
 					if lootDB[Ambiguate(selection[1], "short")] then -- if the name is already registered in the table
 						tinsert(lootDB[Ambiguate(selection[1], "short")], table)
 					else -- if it isn't
 						lootDB[Ambiguate(selection[1], "short")] = {table};
 					end
 				end
-				
+
 				-- Continue with next item or stop?:
 				if lootNum < #itemsToLootIndex then -- if there's more items to loot
 					RCLootCouncil_Mainframe.abortLooting() -- stop the current looting
-					lootNum = lootNum + 1; 
+					lootNum = lootNum + 1;
 					RCLootCouncil:initiateNext(lootTable[lootNum]); -- start it
 				else -- if there's not
 					self:SendCommMessage("RCLootCouncil", "stop", channel) -- tell the council to stop as well
 					RCLootCouncil_Mainframe.abortLooting()
 					RCLootCouncil_Mainframe.stopLooting()
-					RCLootCouncil.CloseButton_OnClick(); 
+					RCLootCouncil.CloseButton_OnClick();
 				end
 				return;
-			end	
+			end
 		end
 		self:Print("Something went wrong, please restart the session.")
 		self:debug("Target not found @Award()")
@@ -1758,7 +1758,7 @@ function RCLootCouncil_Mainframe.award(reason)
 		end
 
 		-- Only store the data if the user wants to
-		if db.trackAwards and table then 
+		if db.trackAwards and table then
 			if lootDB[Ambiguate(selection[1], "short")] then -- if the name is already registered in the table
 				tinsert(lootDB[Ambiguate(selection[1], "short")], table)
 			else -- if it isn't
@@ -1767,7 +1767,7 @@ function RCLootCouncil_Mainframe.award(reason)
 		end
 		if lootNum < #itemsToLootIndex then -- if there's more items to loot
 			RCLootCouncil_Mainframe.abortLooting()
-			lootNum = lootNum + 1; 
+			lootNum = lootNum + 1;
 			RCLootCouncil:initiateNext(lootTable[lootNum]); -- start it
 		else
 			RCLootCouncil_Mainframe.abortLooting()
@@ -1776,7 +1776,7 @@ function RCLootCouncil_Mainframe.award(reason)
 		end
 		return;
 	else
-		self:Print("Error awarding the loot");	
+		self:Print("Error awarding the loot");
 	end
 	self:debug("Award function finished without conclusion!")
 end
@@ -1811,7 +1811,7 @@ function RCLootCouncil_Mainframe.getLowestItemLevel(entry)
 				return itemLevel2
 			else
 				return itemLevel
-			end			
+			end
 		elseif entry[6] then
 			local _, _, _, itemLevel = GetItemInfo(entry[6])
 			return itemLevel
@@ -1821,7 +1821,7 @@ function RCLootCouncil_Mainframe.getLowestItemLevel(entry)
 	end
 	return -1
 end
-			
+
 ------------- sortTable --------------------------
 -- Sorts the table when you click on a header
 --------------------------------------------------
@@ -1837,7 +1837,7 @@ function RCLootCouncil_Mainframe.sortTable(id, specialSort)
 		elseif id then -- if we got a valid id
 			currSortIndex = id -- then initialize our sort index
 			sortMethod = "asc"	-- and the order we're sorting in
-			if id == 4 then 
+			if id == 4 then
 				sortMethod = "desc" -- flip rolls since we've already sorted for that
 			end
 		end
@@ -1853,12 +1853,12 @@ function RCLootCouncil_Mainframe.sortTable(id, specialSort)
 				return true
 			end
 			if sortMethod == "desc" then
-				return v1[1] > v2[1]			
+				return v1[1] > v2[1]
 			else
 				return v1[1] < v2[1]
 			end
 		end)
-		
+
 	elseif (id == 1) then -- Guild Rank sorting (numerically)
 		table.sort(entryTable[currentSession], function(v1, v2)
 			if v1[5] == mlDB.passButton and db.filterPasses then
@@ -1872,7 +1872,7 @@ function RCLootCouncil_Mainframe.sortTable(id, specialSort)
 				return (v1 and RCLootCouncil_Mainframe.getGuildRankNum(v1[1]) < RCLootCouncil_Mainframe.getGuildRankNum(v2[1]))
 			end
 		end)
-		
+
 	elseif (id == 2) then -- Role sorting (alphabetically)
 		table.sort(entryTable[currentSession], function(v1, v2)
 			if v1[5] == mlDB.passButton and db.filterPasses then
@@ -1881,12 +1881,12 @@ function RCLootCouncil_Mainframe.sortTable(id, specialSort)
 				return true
 			end
 			if sortMethod == "desc" then
-				return v1[3] > v2[3]		
+				return v1[3] > v2[3]
 			else
 				return v1[3] < v2[3]
 			end
 		end)
-		
+
 	elseif (id == 3) then -- Totalilvl sorting (numerically)
 		table.sort(entryTable[currentSession], function(v1, v2)
 			if v1[5] == mlDB.passButton and db.filterPasses then
@@ -1895,12 +1895,12 @@ function RCLootCouncil_Mainframe.sortTable(id, specialSort)
 				return true
 			end
 			if sortMethod == "desc" then
-				return v1[4] > v2[4]		
+				return v1[4] > v2[4]
 			else
 				return v1[4] < v2[4]
 			end
 		end)
-		
+
 	elseif (id == 4) then -- Response sorting (need/greed/minor/pass)
 		table.sort(entryTable[currentSession], function(v1, v2)
 			if v1[5] == mlDB.passButton and db.filterPasses then
@@ -1909,12 +1909,12 @@ function RCLootCouncil_Mainframe.sortTable(id, specialSort)
 				return true
 			end
 			if sortMethod == "desc" then
-				return v1[5] > v2[5]		
+				return v1[5] > v2[5]
 			else
 				return v1[5] < v2[5]
-			end				
+			end
 		end)
-		
+
 	elseif (id == 5) then -- Item Level Sorting (lowest item level at the top - largest upgrade so to speak)
 		table.sort(entryTable[currentSession], function(v1, v2)
 			if v1[5] == mlDB.passButton and db.filterPasses then
@@ -1928,7 +1928,7 @@ function RCLootCouncil_Mainframe.sortTable(id, specialSort)
 				return ((v1 ~= nil) and (v2 == nil or ((RCLootCouncil_Mainframe.getLowestItemLevel(v1) ~= -1) and (RCLootCouncil_Mainframe.getLowestItemLevel(v1) < RCLootCouncil_Mainframe.getLowestItemLevel(v2)))))
 			end
 		end)
-		
+
 	elseif (id == 6) then -- votes sorting (numerically)
 		table.sort(entryTable[currentSession], function(v1, v2)
 			if v1[5] == mlDB.passButton and db.filterPasses then
@@ -1937,7 +1937,7 @@ function RCLootCouncil_Mainframe.sortTable(id, specialSort)
 				return true
 			end
 			if sortMethod == "desc" then
-				return v1[8] > v2[8]		
+				return v1[8] > v2[8]
 			else
 				return v1[8] < v2[8]
 			end
@@ -1965,14 +1965,14 @@ function RCLootCouncil_Mainframe.getML()
 			StaticPopup_Show("RCLOOTCOUNCIL_CONFIRM_USAGE")
 		end
 		return name;
-	elseif isRunning and UnitIsGroupLeader("player") then -- if masterlooting isn't on, turn it on, but only if we're running and are the raid leader	
+	elseif isRunning and UnitIsGroupLeader("player") then -- if masterlooting isn't on, turn it on, but only if we're running and are the raid leader
 		SetLootMethod("master", playerName)
 		self:Print("Looting method changed to \"Master Looter\"")
 		isMasterLooter = true
 		return playerFullName;
 	end
 	isMasterLooter = false
-	return ""; 
+	return "";
 end
 
 ------------- isCouncil -------------------------------
@@ -2024,14 +2024,14 @@ function RCLootCouncil_Mainframe.Update(update)
 	if update and ( GetNumGroupMembers() == 0 and #entryTable[currentSession] == 1 and isTesting) or ( GetNumGroupMembers() ~= 0 and #entryTable[currentSession] == GetNumGroupMembers() ) then -- if everybody has rolled or we're alone
 		PeopleToRollLabel:SetTextColor(0,1,0,1) -- make the text green
 		if (isMasterLooter or isTesting) and #votersNames == #currentCouncil then
-			PeopleToRollLabel:SetText("Everyone have rolled and voted!")	
+			PeopleToRollLabel:SetText("Everyone have rolled and voted!")
 		elseif isMasterLooter or isTesting then
 			PeopleToRollLabel:SetText("Everyone have rolled - "..#votersNames.." of "..#currentCouncil.." have voted!")
 			PeopleToRollLabel:SetTextColor(1,1,0,1) -- make the text yellow
 		else
 			PeopleToRollLabel:SetText("Everyone have rolled!")
 		end
-		
+
 		local passes = 0
 		for j = 1, #entryTable[currentSession] do
 			if entryTable[currentSession][j][5] == mlDB.passButton then
@@ -2039,14 +2039,14 @@ function RCLootCouncil_Mainframe.Update(update)
 			end
 		end
 
-		if db.filterPasses and (( GetNumGroupMembers() == 0 and passes == 1 and isTesting ) or ( passes == GetNumGroupMembers() and isMasterLooter )) then						
+		if db.filterPasses and (( GetNumGroupMembers() == 0 and passes == 1 and isTesting ) or ( passes == GetNumGroupMembers() and isMasterLooter )) then
 			self:Print("Everyone passed! Turn \"Filter Passes\" off in order to distribute the loot.")
 		end
 
 		if (GetNumGroupMembers() == 0 and #entryTable[currentSession] == 1 and passes == 1) or not isTesting and passes == GetNumGroupMembers() then
 			PeopleToRollLabel:SetText("Everyone have passed!")
 			PeopleToRollLabel:SetTextColor(0.75, 0.75,0.75,1) -- make the text gray
-		end		
+		end
 
 	elseif update then -- if someone haven't rolled
 		PeopleToRollLabel:SetTextColor(1,1,1,1) -- make the text white
@@ -2055,15 +2055,15 @@ function RCLootCouncil_Mainframe.Update(update)
 			PeopleToRollLabel:SetTextColor(1,0,0,1) -- make the text red
 		elseif isMasterLooter and #votersNames > 0 then
 			PeopleToRollLabel:SetText(""..GetNumGroupMembers() - #entryTable[currentSession].." - "..#votersNames.." of "..#currentCouncil.." have voted!")
-		elseif isTesting and GetNumGroupMembers() == 0 then 
+		elseif isTesting and GetNumGroupMembers() == 0 then
 			PeopleToRollLabel:SetText("1")
 		else
-			PeopleToRollLabel:SetText(GetNumGroupMembers() - #entryTable[currentSession])					
+			PeopleToRollLabel:SetText(GetNumGroupMembers() - #entryTable[currentSession])
 		end
 	end
 
-	for i = 1, MAX_DISPLAY do 
-		local line = offset + i; 
+	for i = 1, MAX_DISPLAY do
+		local line = offset + i;
 		if update and entryTable[currentSession][line] then -- if there's something at a given entry and we want to update
 			local entry = entryTable[currentSession][line]
 			-- Start setting all the text(ures):
@@ -2074,14 +2074,14 @@ function RCLootCouncil_Mainframe.Update(update)
 			getglobal("ContentFrameEntry"..i.."Response"):SetText(mlDB.buttons[entry[5]]["response"])
 			getglobal("ContentFrameEntry"..i.."VoteHoverVotes"):SetText(entry[8])
 			RCLootCouncil_Mainframe.setClassIcon(getglobal("ContentFrameEntry"..i.."ClassTexture"), entry[9]); -- set the class-texture
-			
+
 			-- set the note button texture
 			if entry[13] then -- normal
 				getglobal("ContentFrameEntry"..i.."NoteButton"):SetNormalTexture("Interface/BUTTONS/UI-GuildButton-PublicNote-Up.png")
 			else -- disabled
 				getglobal("ContentFrameEntry"..i.."NoteButton"):SetNormalTexture("Interface/BUTTONS/UI-GuildButton-PublicNote-Disabled.png")
 			end
-					 			
+
 			-- set the vote button properly
 			getglobal("ContentFrameEntry"..i.."BtVote"):Show()
 			if entry[11] then
@@ -2099,7 +2099,7 @@ function RCLootCouncil_Mainframe.Update(update)
 
 			-- Set the item textures
 			RCLootCouncil_Mainframe.setCurrentGear(entry[6], entry[7], getglobal("ContentFrameEntry"..i.."CurrentGear1HoverCurrentGear1"),getglobal("ContentFrameEntry"..i.."CurrentGear2HoverCurrentGear2"));
-			
+
 			-- Only show entries if we don't filter for passes
 			if db.filterPasses and entry[5] == mlDB.passButton then
 				getglobal("ContentFrameEntry"..i):Hide();
@@ -2109,7 +2109,7 @@ function RCLootCouncil_Mainframe.Update(update)
 
 		else -- if there's nothing at an entry
 			getglobal("ContentFrameEntry"..i):Hide();
-		end	
+		end
 	end
 	if isMinimized then RCLootCouncil_Mainframe.minimize("minimize"); end;
 end
@@ -2121,15 +2121,15 @@ function RCLootCouncil_Mainframe.testFrames()
 	for j = 1, 9 do
 		if j == 4 then j = 5 end; -- skip the shirt
 		local itemLink = GetInventoryItemLink("player", j)
-		if itemLink ~= nil then				
-			lootTable[1] = itemLink	
+		if itemLink ~= nil then
+			lootTable[1] = itemLink
 			lootNum = 1;
 			itemRunning = itemLink
 			masterLooter = playerFullName
 			isTesting = true
 			mlDB = db.dbToSend
 			--RCLootCouncil:announceConsideration()
-			RCLootCouncil_LootFrame:Update(lootTable)	
+			RCLootCouncil_LootFrame:Update(lootTable)
 			RCLootCouncil_Mainframe.prepareLootFrame(itemLink)
 			lootFramesCreated = true
 			self:Print("Local Solo Test initiated.")
@@ -2196,7 +2196,7 @@ function RCLootCouncil_Mainframe.raidTestFrames(arg)
 			self:Print("Raid Test initiated.")
 
 		else
-			self:Print("Only Group Leader/assistants can issue a raid test.")	
+			self:Print("Only Group Leader/assistants can issue a raid test.")
 		end
 	else
 		self:Print("You cannot raidtest without being in a raid.")
@@ -2266,7 +2266,7 @@ end
 ----------------------------------
 function RCLootCouncil_Mainframe:voteHover(id)
 	if (not mlDB.anonymousVoting or (mlDB.masterLooterOnly and (isMasterLooter or isTesting))) and #entryTable[currentSession][id][12] > 1 then -- check if voting is anonymous
-		if id then 
+		if id then
 			id = id + offset
 			GameTooltip:SetOwner(MainFrame, "ANCHOR_CURSOR")
 			GameTooltip:AddLine("Voters\n")
@@ -2285,12 +2285,12 @@ end
 ---------------------------------------------
 function RCLootCouncil_Mainframe:PeopleToRollHover()
 	RCLootCouncil:debugS("Mainframe.PeopleToRollHover()")
-	local peopleToRoll = {}	
+	local peopleToRoll = {}
 	for i = 1, GetNumGroupMembers() do
 		local name = GetRaidRosterInfo(i)
 		local test = true
 		for j = 1, #entryTable[currentSession] do
-			if RCLootCouncil:UnitIsUnit(entryTable[currentSession][j][1], name) then test = false; end			
+			if RCLootCouncil:UnitIsUnit(entryTable[currentSession][j][1], name) then test = false; end
 		end
 		if test then tinsert(peopleToRoll, name); end
 	end
@@ -2322,7 +2322,7 @@ end
 -----------------------------------------
 function RCLootCouncil:LootOnClick(button)
 	   self:debugS("LootOnClick(button)")
-	if InCombatLockdown() and IsAltKeyDown() then 
+	if InCombatLockdown() and IsAltKeyDown() then
 		self:Print("Cannot initiate loot while in combat")
 	elseif db.altClickLooting and IsAltKeyDown() and not IsShiftKeyDown() and not IsControlKeyDown() then
 		self:debug("LootOnClick called")
@@ -2341,15 +2341,15 @@ function RCLootCouncil:LootOnClick(button)
 		end
 
 		tinsert(lootTable, GetLootSlotLink(button.slot)) -- add the item link to the table
-		tinsert(itemsToLootIndex, button.slot) -- add its index to the lootTable		
-		
+		tinsert(itemsToLootIndex, button.slot) -- add its index to the lootTable
+
 		if #lootTable == 1 then -- only initiate the first item
 			lootNum = 1
 			RCLootCouncil_initiateLoot(GetLootSlotLink(button.slot))
 		else -- redo voting if more items were alt clicked before last item was awarded
 			RCLootCouncil_Mainframe.abortLooting()
 			self:SendCommMessage("RCLootCouncil", "stop", channel) -- tell the council to stop as well
-			
+
 			-- clear items already looted so they aren't rerolled
 			if lootNum > 1 then
 				for i = lootNum-1, 1, -1  do
@@ -2358,7 +2358,7 @@ function RCLootCouncil:LootOnClick(button)
 					tremove(itemsToLootIndex, i)
 				end
 			end
-			
+
 			currentSession = 1
 			lootNum = 1
 			RCLootCouncil_initiateLoot(lootTable[lootNum])
@@ -2376,7 +2376,7 @@ function RCLootCouncil:GetItemsFromMessage(msg, sender)
 	RCLootCouncil:debugS("GetItemsFromMessage("..tostring(msg)..", "..tostring(sender)..")")
 	if msg == db.announceText or msg == db.awardMessageText1 or msg == db.awardMessageText2 then return; end
 	if isMasterLooter then
-		local theItem = msg:find("|Hitem:"); -- See if they linked an item	
+		local theItem = msg:find("|Hitem:"); -- See if they linked an item
 		if theItem  then -- If they entered a valid item
 			self:debugS("item1 might be: "..theItem)
 			local actualItemString2; -- Initialize for possibility of 2 item links
@@ -2384,28 +2384,28 @@ function RCLootCouncil:GetItemsFromMessage(msg, sender)
 			if startLoc > 13 then return; end -- Hitem should start before index 13, otherwise it's bad usage
 			local endLoc = string.find(msg, "|r", startLoc)
 			local actualItemString = string.match(msg, "|%x+|Hitem:.-|h.-|h|r");
-			self:debugS("actualItemString: "..actualItemString)		
+			self:debugS("actualItemString: "..actualItemString)
 			startLoc = string.find(msg, "Hitem:", endLoc) --See if they linked a second item
-			
+
 			if startLoc then -- If they did
 				self:debugS("Two items found!")
 				local laterString = string.sub(msg, endLoc);
 				actualItemString2 = string.match(laterString, "|%x+|Hitem:.-|h.-|h|r");
 			end
-			
+
 			local _, iLink1 = GetItemInfo(actualItemString); -- Get better info for item 1
 			local iLink2;
 			if actualItemString2 then -- and item 2
 				_, iLink2 = GetItemInfo(actualItemString2);
 				-- also get the new endLoc so we can check for whisperKeys
 				endLoc = string.find(msg, "|r", startLoc)
-			end 
-			
+			end
+
 			-- lets check if they supplied a whisper key
 			local responseNum = 1; -- default is Main Spec
 			local restOfMsg = string.sub(msg, endLoc)
 			local whisperKeys = {}
-			for i = 1, mlDB.numButtons do --go through all the button				
+			for i = 1, mlDB.numButtons do --go through all the button
 				gsub(buttonsDB[i]["whisperKey"], '[%w]+', function(x) tinsert(whisperKeys, {key = x, num = i}) end) -- extract the whisperKeys to a table
 			end
 			self:debugS("restOfMsg = "..restOfMsg)
@@ -2427,7 +2427,7 @@ function RCLootCouncil:GetItemsFromMessage(msg, sender)
 					_, rank = GetGuildInfo(sender)
 					break;
 				end
-			end	 		
+			end
 			-- add the entry to the player's own entryTable
 			local toAdd = {
 				["i"] = lootNum,
@@ -2450,7 +2450,7 @@ function RCLootCouncil:GetItemsFromMessage(msg, sender)
 			RCLootCouncil_Mainframe.removeEntry(lootNum, sender) -- just remove it right away to avoid doubles (.removeEntry will handle errors)
 			self:SendCommMessage("RCLootCouncil", "remove "..lootNum.." "..sender, channel)
 			tinsert(entryTable[lootNum], toAdd[1])
-			self:SendCommMessage("RCLootCouncil", "add "..self:Serialize(toAdd), channel)	
+			self:SendCommMessage("RCLootCouncil", "add "..self:Serialize(toAdd), channel)
 			RCLootCouncil_Mainframe.Update(true)
 			self:Print("Item received and added from "..Ambiguate(sender, "short")..".")
 			-- tell the player what they've been added as
@@ -2502,7 +2502,7 @@ function RCLootCouncil_Mainframe:NameHover(id)
 						GameTooltip:AddDoubleLine(" ",	itemsReceivedToday[k], 1,1,1, 1,1,1)
 					end
 				end
-			
+
 				GameTooltip:AddLine(" ")
 				GameTooltip:AddLine(name.." has received a total of "..#lootDB[name].." items over "..firstDateString..".", 1,1,1)
 				GameTooltip:Show()
@@ -2533,11 +2533,11 @@ function RCLootCouncil:GetNumberOfDaysFromNow(oldDate)
 
 	if days <= 1 then
 		return "today";
-	elseif months >= 1 then	
+	elseif months >= 1 then
 		if years >= 1 then
 			return days.." days, "..months.." months and "..years.." years.";
 		else
-			return days.." days and "..months.." months.";				
+			return days.." days and "..months.." months.";
 		end
 	else
 		return days.." days.";
@@ -2612,7 +2612,7 @@ function RCLootCouncil:SendWhisperHelp(target)
 		msgToSend = msgToSend..""..buttonsDB[i]["whisperKey"].."." -- need, mainspec, etc
 		SendChatMessage(msgToSend, "WHISPER", nil, target)
 	end
-	self:Print("sent whisper help to "..target)	
+	self:Print("sent whisper help to "..target)
 end
 
 -------------- DisplayNote -------------------
@@ -2642,7 +2642,7 @@ function RCLootCouncil_Mainframe:ChangeSession(id)
 	currentSession = id
 	RCLootCouncil_Mainframe.updateSelection(0, true);
 	RCLootCouncil_Mainframe.prepareLootFrame(lootTable[id])
-	RCLootCouncil_Mainframe.sortTable(4, true) -- Make sure we sort on responses 
+	RCLootCouncil_Mainframe.sortTable(4, true) -- Make sure we sort on responses
 end
 
 -------------- SessionButtonOnEnter -----------
@@ -2654,7 +2654,7 @@ function RCLootCouncil_Mainframe:SessionButtonOnEnter(id)
 		GameTooltip:AddLine("All whispers received will be added to this item.",1,1,1)
 	elseif id == currentSession then
 		GameTooltip:AddLine("This item is currently showed.")
-	elseif id < lootNum then 
+	elseif id < lootNum then
 		GameTooltip:AddLine("This item has been awarded!",1,0,0)
 	else
 		GameTooltip:AddLine("Click to view the session for:")
@@ -2673,7 +2673,7 @@ function RCLootCouncil_Mainframe:UpdateSessionButtons()
 		if lootTable[i] and not isMinimized then
 			local _,_,_,_,_,_,_,_,_, texture = GetItemInfo(lootTable[i]);
 			if not texture then
-				texture = "Interface\InventoryItems\WoWUnknownItem01"
+				texture = "Interface\\InventoryItems\\WoWUnknownItem01"
 			end
 			getglobal("RCLootCouncil_SessionButton"..i.."NormalTexture"):SetVertexColor(1,1,1)
 			if i == lootNum then
@@ -2710,7 +2710,7 @@ function RCLootCouncil_Mainframe_RightClickMenu(menu, level)
 	if level == 1 then
 		UIDropDownMenu_AddButton({text = Ambiguate(selection[1], "short"), isTitle = true, notCheckable = true, disabled = true}, level);
 		UIDropDownMenu_AddButton({text = "", notCheckable = true, disabled = true}, level);
-		
+
 		if currentSession == lootNum then -- greyout award buttons if we can't award.
 			UIDropDownMenu_AddButton({text = "Award", notCheckable = true, func = function() if currentSession == lootNum then StaticPopup_Show("RCLOOTCOUNCIL_CONFIRM_AWARD", itemRunning, Ambiguate(selection[1], "short")); else self:Print("You cannot award this item yet.")end; end, }, level);
 			UIDropDownMenu_AddButton({text = "Award for ...", value = "AWARD_FOR", notCheckable = true, hasArrow = true, }, level);
@@ -2720,18 +2720,18 @@ function RCLootCouncil_Mainframe_RightClickMenu(menu, level)
 		end
 
 		UIDropDownMenu_AddButton({text = "", notCheckable = true, disabled = true}, level);
-		
-		UIDropDownMenu_AddButton({text = "Change Response", value = "CHANGE_RESPONSE", notCheckable = true, hasArrow = true, }, level);		
+
+		UIDropDownMenu_AddButton({text = "Change Response", value = "CHANGE_RESPONSE", notCheckable = true, hasArrow = true, }, level);
 		UIDropDownMenu_AddButton({text = "Reannounce ...", value = "REANNOUNCE", notCheckable = true, hasArrow = true, }, level)
 		UIDropDownMenu_AddButton({text = "Remove from consideration", notCheckable = true, func = function() self:SendCommMessage("RCLootCouncil", "remove "..currentSession.." "..selection[1], channel); RCLootCouncil_Mainframe.removeEntry(currentSession, selection[1]); end, }, level);
-	
+
 	elseif level == 2 then
 		local value = UIDROPDOWNMENU_MENU_VALUE
 		if value == "AWARD_FOR" then
 			for k,v in pairs(db.otherAwardReasons) do
 				UIDropDownMenu_AddButton({text = v.text, notCheckable = true, func = function() RCLootCouncil_Mainframe.award(v)end, }, level)
 			end
-		
+
 		elseif value == "CHANGE_RESPONSE" then
 			for k,v in pairs(buttonsDB) do
 				if k > db.dbToSend.numButtons then break; end
@@ -2740,14 +2740,14 @@ function RCLootCouncil_Mainframe_RightClickMenu(menu, level)
 					notCheckable = true,
 					func = function()
 						for x,y in pairs(entryTable[currentSession]) do
-							if self:UnitIsUnit(y[1], selection[1]) then 
+							if self:UnitIsUnit(y[1], selection[1]) then
 								entryTable[currentSession][x][5] = k
 								RCLootCouncil_Mainframe.Update(true);
 								self:SendCommMessage("RCLootCouncil", "change "..self:Serialize({currentSession,x,k}), channel)
 								return;
 							end
 						end
-					end,}, level)	
+					end,}, level)
 			end
 
 		elseif value == "REANNOUNCE" then
@@ -2806,12 +2806,12 @@ function RCLootCouncil:AutoAward(index, awardTo, itemLink)
 		LootSlot(index)
 		self:debug(""..awardTo.." was Auto Awarded with "..item);
 		self:Print(itemLink.." was Auto Awarded to "..awardTo..". Reason: "..db.otherAwardReasons[db.autoAwardReason].text)
-		
+
 		local instanceName, _, _, difficultyName = GetInstanceInfo()
 		local table;
 		if db.otherAwardReasons[db.autoAwardReason].log then -- only log if the reasoning allows it
 			self:debug("table is being created!")
-			table = {["lootWon"] = itemLink, ["date"] = date("%d/%m/%y"), ["time"] = date("%H:%M:%S"), ["instance"] = instanceName.." "..difficultyName, ["boss"] = bossName, ["votes"] = nil, ["itemReplaced1"] = nil, ["itemReplaced2"] = nil, ["response"] = db.otherAwardReasons[db.autoAwardReason].text, ["responseID"] = 0,}			
+			table = {["lootWon"] = itemLink, ["date"] = date("%d/%m/%y"), ["time"] = date("%H:%M:%S"), ["instance"] = instanceName.." "..difficultyName, ["boss"] = bossName, ["votes"] = nil, ["itemReplaced1"] = nil, ["itemReplaced2"] = nil, ["response"] = db.otherAwardReasons[db.autoAwardReason].text, ["responseID"] = 0,}
 		end
 
 		-- The ML sends the history, if he wants others to be able to track it.
@@ -2821,7 +2821,7 @@ function RCLootCouncil:AutoAward(index, awardTo, itemLink)
 		end
 
 		-- Only store the data if the user wants to
-		if db.trackAwards and table then 
+		if db.trackAwards and table then
 			self:debug("we're in the logging!")
 			if lootDB[awardTo] then -- if the name is already registered in the table
 				tinsert(lootDB[awardTo], table)
@@ -2841,8 +2841,8 @@ function RCLootCouncil:AutoAward(index, awardTo, itemLink)
 			else
 				self:Print("Couldn't award the loot since there was no item!")
 				return;
-			end				
-			
+			end
+
 			local instanceName, _, _, difficultyName = GetInstanceInfo()
 			local table;
 			if db.otherAwardReasons[db.autoAwardReason].log then -- only log if the reasoning allows it
@@ -2855,7 +2855,7 @@ function RCLootCouncil:AutoAward(index, awardTo, itemLink)
 			end
 
 			-- Only store the data if the user wants to
-			if db.trackAwards and table then 
+			if db.trackAwards and table then
 				if lootDB[awardTo] then -- if the name is already registered in the table
 					tinsert(lootDB[awardTo], table)
 				else -- if it isn't
@@ -2863,7 +2863,7 @@ function RCLootCouncil:AutoAward(index, awardTo, itemLink)
 				end
 			end
 			return;
-		end	
+		end
 	end
 end
 
