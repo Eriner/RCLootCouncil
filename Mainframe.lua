@@ -18,19 +18,13 @@
 --_______________________________.
 --[[ CHANGELOG
 
-====1.7.3 Release
+====1.7.4 Release
 
-	*Updated .toc for 6.2
-
-	++More response announcement++
-	*It was pretty stupid not to allow normal award reasons to be announced with the last update.
-	Use "&r" in the announcement text to substitue it for the award reason.
+	*++Added tier 18 tokens++
+	*Shows the equivalent gear when looting t18 tokens. Also supporting trinkets.
 
 	Bugfixes:
-	*//Fixed some leaked globals.//
-	*//Optimized date calculations.//
-	*//Notes sometimes went all over the place. Making a note and responding on another item will still cause the note to disappear.
-	*//Sometimes items couldn't be awarded if people left the group.//
+	*Various small improvements.
 ]]
 
 
@@ -1230,7 +1224,12 @@ local INVTYPE_Slots = {
 function RCLootCouncil.getCurrentGear(item)
 	local itemID = tonumber(strmatch(item, "item:(%d+):")) -- extract itemID
 	-- check if the item is a token, and if it is, return the matching current gear
-	if RCTokenTable[itemID] then return GetInventoryItemLink("player", GetInventorySlotInfo(RCTokenTable[itemID])), nil; end
+	if RCTokenTable[itemID] then
+		if RCTokenTable[itemID] == "Trinket" then -- We need to return both trinkets
+			return GetInventoryItemLink("player", GetInventorySlotInfo("TRINKET0SLOT")), return GetInventoryItemLink("player", GetInventorySlotInfo("TRINKET1SLOT"))
+		end
+		return GetInventoryItemLink("player", GetInventorySlotInfo(RCTokenTable[itemID])), nil;
+	end
 	local _, _, _, _, _, _, _, _, thisItemEquipLoc = GetItemInfo(item);
 	local item1, item2;
 	local slot = INVTYPE_Slots[thisItemEquipLoc]

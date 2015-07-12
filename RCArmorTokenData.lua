@@ -6,7 +6,28 @@
 RCTokenTable = {
 	--[xxxxxx] = "ExampleSlot",
 
-	-- TIER 17	 Blackrock Foundry ---------------------------
+	-- TIER 18	Hellfire Citadel
+	[127962] = "ChestSlot",
+	[127953] = "ChestSlot",
+	[127963] = "ChestSlot",
+
+	[127955] = "LegsSlot",
+	[127960] = "LegsSlot",
+	[127965] = "LegsSlot",
+
+	[127956] = "HeadSlot",
+	[127959] = "HeadSlot",
+	[127966] = "HeadSlot",
+
+	[127957] = "ShoulderSlot",
+	[127961] = "ShoulderSlot",
+	[127967] = "ShoulderSlot",
+
+	[127958] = "HandsSlot",
+	[127954] = "HandsSlot",
+	[127964] = "HandsSlot",
+
+	-- TIER 17	Blackrock Foundry ---------------------------
 	-- Normal
 	[119305] = "ChestSlot",
 	[119318] = "ChestSlot",
