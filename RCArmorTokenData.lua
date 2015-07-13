@@ -27,6 +27,10 @@ RCTokenTable = {
 	[127954] = "HandsSlot",
 	[127964] = "HandsSlot",
 
+	[127968] = "Trinket",
+	[127969] = "Trinket",
+	[127970] = "Trinket",
+
 	-- TIER 17	Blackrock Foundry ---------------------------
 	-- Normal
 	[119305] = "ChestSlot",

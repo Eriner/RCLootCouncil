@@ -21,7 +21,7 @@
 ====1.7.4 Release
 
 	*++Added tier 18 tokens++
-	*Shows the equivalent gear when looting t18 tokens. Also supporting trinkets.
+	*Shows the equivalent gear when looting tier 18 tokens. Also supports trinkets.
 
 	Bugfixes:
 	*Various small improvements.
@@ -1226,7 +1226,7 @@ function RCLootCouncil.getCurrentGear(item)
 	-- check if the item is a token, and if it is, return the matching current gear
 	if RCTokenTable[itemID] then
 		if RCTokenTable[itemID] == "Trinket" then -- We need to return both trinkets
-			return GetInventoryItemLink("player", GetInventorySlotInfo("TRINKET0SLOT")), return GetInventoryItemLink("player", GetInventorySlotInfo("TRINKET1SLOT"))
+			return GetInventoryItemLink("player", GetInventorySlotInfo("TRINKET0SLOT")), GetInventoryItemLink("player", GetInventorySlotInfo("TRINKET1SLOT"))
 		end
 		return GetInventoryItemLink("player", GetInventorySlotInfo(RCTokenTable[itemID])), nil;
 	end
@@ -2174,6 +2174,8 @@ function RCLootCouncil_Mainframe.raidTestFrames(arg)
 				105639,
 				104508,
 				105621,
+				127962,
+				127970,
 			}
 			-- get the client to cache all test items
 			for i = 1, #table do
