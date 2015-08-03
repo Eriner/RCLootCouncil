@@ -4,27 +4,16 @@
 -- Mainframe.lua Handles all the masterloot interaction and host/client comms
 
 --_______________________________.
--- TODO:
---		Test if PARTY_LOOT_METHOD_CHANGED can handle the GetML() and GetCouncil()
---		Random award between equal votes.
---		Implement autopass - will use same tech as stat priority sorting.
-
---		Sort item rolls (optionally) by class stat priority based on item stats.
-
---		LONG TERM: Clean UI, possibly skin to match UI choices (Blizzard, ElvUI, etc)
-
---		Loot Everything doesn't do shit
-
---_______________________________.
 --[[ CHANGELOG
 
-====1.7.4 Release
+====1.7.5 Release
 
-	*++Added tier 18 tokens++
-	*Shows the equivalent gear when looting tier 18 tokens. Also supports trinkets.
+	*++Prepared for v2.0-Alpha++
+	*Changes in v2.0 would cause 1.7.4 to throw an error everytime it received a command. This version fixes that.
+	*Added support for showing v2.0 in version checker, and reply to v2.0 version requests.
 
 	Bugfixes:
-	*Various small improvements.
+	*Improved ElvUI Loot Frame support.
 ]]
 
 
@@ -696,6 +685,23 @@ function RCLootCouncil:OnCommReceived(prefix, msg, distri, sender)
 --			self:debug("Bad command: "..tostring(object))
 -- disabled for spamming when (not (isCouncil or isMasterLooter))
 		end
+		-- If we get here it's a v2.0 command, or something went wrong?
+		local test, c, data = self:Deserialize(msg)
+		if test then
+			self:debug("We got a v2.0 command!")
+			-- We want to reply on version tests
+			if c == "verTest" then
+				self:SendCommMessage("RCLootCouncil", self:Serialize("verTestReply", {playerFullName, select(2, UnitClass("player")), self:GetGuildRank(), version}), "WHISPER", sender)
+				if not data[5] then -- There's no tVersion, which means v2.0 has been released!
+					self:Print("|cffcb6700v2.0|r is out. You are strongly recommended to update as |cffcb6700v2.0|r does not work with older versions!")
+				end
+			elseif c == "verTestReply"	then
+				if data[5] and data[5] ~= "" then
+					data[4] = data[4].."-"..data[5] -- Append tVersion
+				end
+				RCLootCouncil_VersionFrame:AddPlayer({data[2], data[1], data[3], data[4]})
+			end
+		end	-- End of v2.0 support
 	end
 end
 
@@ -2327,6 +2333,10 @@ function RCLootCouncil:LootOnClick(button)
 		self:Print("Cannot initiate loot while in combat")
 	elseif db.altClickLooting and IsAltKeyDown() and not IsShiftKeyDown() and not IsControlKeyDown() then
 		self:debug("LootOnClick called")
+		if getglobal("ElvLootFrame") then
+			button.slot = button:GetID() -- ElvUI hack
+		end
+
 		-- check that we don't add an item we're already looting
 		for k,v in pairs(itemsToLootIndex) do
 			if v == button.slot then -- if we're already looting that slot
@@ -2336,9 +2346,6 @@ function RCLootCouncil:LootOnClick(button)
 		end
 		for i = 1, #entryTable do -- clear the entryTable for already received answers
 			wipe(entryTable[i])
-		end
-		if getglobal("ElvLootFrame") then
-			button.slot = button:GetID() -- ElvUI hack
 		end
 
 		tinsert(lootTable, GetLootSlotLink(button.slot)) -- add the item link to the table

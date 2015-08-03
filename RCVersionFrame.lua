@@ -82,7 +82,7 @@ end
 function RCLootCouncil_VersionFrame:Update()
 	FauxScrollFrame_Update(RCVersionFrameContentFrame, #contentTable, 10, 20, nil, nil, nil, nil, nil, nil, true);
 	local offset = FauxScrollFrame_GetOffset(RCVersionFrameContentFrame)
-	for i = 1, 10 do 
+	for i = 1, 10 do
 		local line = offset + i;
 		if contentTable[line] then -- if there's something at a given entry
 			local entry = contentTable[line]
@@ -90,7 +90,7 @@ function RCLootCouncil_VersionFrame:Update()
 			RCLootCouncil_Mainframe.setClassIcon(getglobal("RCVersionFrameContentFrameEntry"..i.."ClassTexture"), entry[1]);
 			getglobal("RCVersionFrameContentFrameEntry"..i.."Rank"):SetText(entry[3])
 			getglobal("RCVersionFrameContentFrameEntry"..i.."Version"):SetText("v"..entry[4])
-			
+
 			if entry[4] == "Not installed" then
 				getglobal("RCVersionFrameContentFrameEntry"..i.."Version"):SetTextColor(0.75,0.75,0.75,1) -- grey
 				getglobal("RCVersionFrameContentFrameEntry"..i.."Version"):SetText(entry[4])
@@ -100,8 +100,12 @@ function RCLootCouncil_VersionFrame:Update()
 				getglobal("RCVersionFrameContentFrameEntry"..i.."Version"):SetText("Old - "..entry[4])
 
 			elseif newestVersion <= entry[4] then
-				newestVersion = entry[4]
-				getglobal("RCVersionFrameContentFrameEntry"..i.."Version"):SetTextColor(0,1,0,1) -- green
+				if strfind(entry[4], "Alpha") then -- v2.0 alpha version
+					getglobal("RCVersionFrameContentFrameEntry"..i.."Version"):SetTextColor(1,1,0,1) -- yellow
+				else
+					newestVersion = entry[4]
+					getglobal("RCVersionFrameContentFrameEntry"..i.."Version"):SetTextColor(0,1,0,1) -- green
+				end
 			else
 				getglobal("RCVersionFrameContentFrameEntry"..i.."Version"):SetTextColor(1,0,0,1) -- red
 			end
@@ -132,7 +136,7 @@ function RCLootCouncil_VersionFrame:Sort(id)
 				return v1 and v1[2] < v2[2]
 			end
 		end)
-		
+
 	elseif (id == 1) then -- Guild Rank sorting (numerically)
 		table.sort(contentTable, function(v1, v2)
 			if sortMethod == "desc" then
@@ -145,11 +149,10 @@ function RCLootCouncil_VersionFrame:Sort(id)
 		table.sort(contentTable, function(v1, v2)
 			if sortMethod == "desc" then
 				return v1[4] > v2[4]
-			else 
+			else
 				return v1[4] < v2[4]
 			end
 		end)
 	end
 	RCLootCouncil_VersionFrame:Update()
 end
-
