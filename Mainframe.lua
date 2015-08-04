@@ -6,14 +6,9 @@
 --_______________________________.
 --[[ CHANGELOG
 
-====1.7.5 Release
+====1.7.6 Release
 
-	*++Prepared for v2.0-Alpha++
-	*Changes in v2.0 would cause 1.7.4 to throw an error everytime it received a command. This version fixes that.
-	*Added support for showing v2.0 in version checker, and reply to v2.0 version requests.
-
-	Bugfixes:
-	*Improved ElvUI Loot Frame support.
+	*Added potential fix for CompactRaidGroup() taint.
 ]]
 
 
@@ -191,6 +186,12 @@ function RCLootCouncil:OnInitialize()
 	-- add it to blizz options
 	self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("RCLootCouncil", "RCLootCouncil")
 	buttonsDB = db.dbToSend.buttons
+
+	-- Hack to remove CompactRaidGroup taint
+	-- Make clicking cancel the same as clicking okay
+	InterfaceOptionsFrameCancel:SetScript("OnClick", function()
+	 InterfaceOptionsFrameOkay:Click()
+	end)
 end
 
 function RCLootCouncil:OnEnable()
