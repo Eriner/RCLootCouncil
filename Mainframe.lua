@@ -479,6 +479,7 @@ function RCLootCouncil.EventHandler(self2, event, ...)
 	end
 end
 
+local upgrade_string_counter = 0
 
 -------- OnCommReceived -------------------
 -- Handles communications
@@ -693,8 +694,9 @@ function RCLootCouncil:OnCommReceived(prefix, msg, distri, sender)
 			-- We want to reply on version tests
 			if c == "verTest" then
 				self:SendCommMessage("RCLootCouncil", self:Serialize("verTestReply", {playerFullName, select(2, UnitClass("player")), self:GetGuildRank(), version}), "WHISPER", sender)
-				if not data[5] then -- There's no tVersion, which means v2.0 has been released!
+				if not data[2] and upgrade_string_counter < 5 then -- There's no tVersion, which means v2.0 has been released!
 					self:Print("|cffcb6700v2.0|r is out. You are strongly recommended to update as |cffcb6700v2.0|r does not work with older versions!")
+					upgrade_string_counter = upgrade_string_counter + 1
 				end
 			elseif c == "verTestReply"	then
 				if data[5] and data[5] ~= "" then
