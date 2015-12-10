@@ -6,9 +6,10 @@
 --_______________________________.
 --[[ CHANGELOG
 
-====1.7.6 Release
+====1.7.7 Release
 
-	*Added potential fix for CompactRaidGroup() taint.
+	Bugfixes:
+	*//Fixed the "Upgrade string".//
 ]]
 
 
