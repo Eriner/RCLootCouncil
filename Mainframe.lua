@@ -6,10 +6,10 @@
 --_______________________________.
 --[[ CHANGELOG
 
-====1.7.7 Release
-
-	Bugfixes:
-	*//Fixed the "Upgrade string".//
+====1.7.8 Release
+	*Now handles new commands from v2.0.0-alpha.10
+	Note: In this (and previous) version(s) versionCheck and reanounce doesn't work with players from different realms.
+	Consider upgrading to v2.0.
 ]]
 
 
@@ -694,7 +694,8 @@ function RCLootCouncil:OnCommReceived(prefix, msg, distri, sender)
 			self:debug("We got a v2.0 command!")
 			-- We want to reply on version tests
 			if c == "verTest" then
-				self:SendCommMessage("RCLootCouncil", self:Serialize("verTestReply", {playerFullName, select(2, UnitClass("player")), self:GetGuildRank(), version}), "WHISPER", sender)
+				self:SendCommMessage("RCLootCouncil", self:Serialize("xrealm", {sender, "verTestReply", playerFullName, select(2, UnitClass("player")), self:GetGuildRank(), version}), distri)
+				--self:SendCommMessage("RCLootCouncil", self:Serialize("verTestReply", {playerFullName, select(2, UnitClass("player")), self:GetGuildRank(), version}), "WHISPER", sender)
 				if not data[2] and upgrade_string_counter < 5 then -- There's no tVersion, which means v2.0 has been released!
 					self:Print("|cffcb6700v2.0|r is out. You are strongly recommended to update as |cffcb6700v2.0|r does not work with older versions!")
 					upgrade_string_counter = upgrade_string_counter + 1
@@ -704,6 +705,18 @@ function RCLootCouncil:OnCommReceived(prefix, msg, distri, sender)
 					data[4] = data[4].."-"..data[5] -- Append tVersion
 				end
 				RCLootCouncil_VersionFrame:AddPlayer({data[2], data[1], data[3], data[4]})
+
+			elseif c == "xrealm" then -- New in v2.0.0-alpha10
+				local target = tremove(data, 1)
+				if self:UnitIsUnit(target, "player") then
+					local command = tremove(data, 1)
+					if command == "verTestReply" then
+						if data[5] and data[5] ~= "" then
+							data[4] = data[4].."-"..data[5] -- Append tVersion
+						end
+						RCLootCouncil_VersionFrame:AddPlayer({data[2], data[1], data[3], data[4]})
+					end
+				end
 			end
 		end	-- End of v2.0 support
 	end
